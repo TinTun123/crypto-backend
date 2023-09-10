@@ -55,9 +55,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://sunflowerseedsfoundation.com/'),
+    'url' => env('APP_URL', 'https://crypto-demo.sunflowerseedsfoundation.com/'),
 
-    'frontend_url' => env('FRONTEND_URL', 'https://crypto-demo.sunflowerseedsfoundation.com/'),
+    'frontend_url' => env('FRONTEND_URL', 'https://sunflowerseedsfoundation.com/'),
 
     'asset_url' => env('ASSET_URL'),
 
