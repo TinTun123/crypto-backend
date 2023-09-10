@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => [env('FRONTEND_URL', 'https://warm-custard-55ab21.netlify.app/')],
+    'allowed_origins' => [env('FRONTEND_URL', 'https://sunflowerseedsfoundation.com/')],
 
     'allowed_origins_patterns' => [],
 
