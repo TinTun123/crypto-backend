@@ -37,10 +37,12 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        if (auth()->user()->user_level === 1) {
+        if (Auth::check() && Auth::user()->user_level === 1) {
             return response()->json(['message' => 'new user registered'], 200);
         } else {
-            return response()->noContent();
+
+            return response()->json(['user' => $user], 200);
+
         }
 
         // Auth::login($user);
