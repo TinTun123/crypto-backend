@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [RegisteredUserController::class, 'store'])
                 ->name('register');
 
+Route::post('verify2fa', [AuthenticatedSessionController::class, 'verify']);
+
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
                 ->middleware('guest')
                 ->name('login');
