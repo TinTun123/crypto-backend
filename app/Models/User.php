@@ -23,7 +23,16 @@ class User extends Authenticatable
         'country',
         'email',
         'password',
-        'user_level'
+        'user_level',
+        'birthdat',
+        'id_card',
+        'profile_img',
+        'id_back',
+        'phone_number',
+        'status',
+        'isVerified',
+        'note'
+        
     ];
 
     /**
@@ -45,4 +54,22 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isAdmin(){
+        return $this->user_level === 1;
+    }
+
+    public function isGust() {
+        return $this->user_level !== 0;
+    }
+
+    public function privateKey() {
+        return $this->hasOne(UserPrivate::class);
+    }
+
+    public function activitiesLogs() {
+
+        return $this->hasMany(ActivitiesLog::class, 'user_id');
+        
+    }
 }

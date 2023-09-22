@@ -7,19 +7,18 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TwoFactorCodeNotification extends Notification
+class UserPrivateKeyNotification extends Notification
 {
     use Queueable;
 
-    public $code;
-
+    public $privateKey;
     /**
      * Create a new notification instance.
      */
-    public function __construct($code)
+    public function __construct($key)
     {
         //
-        $this->code = $code;
+        $this->privateKey = $key;
     }
 
     /**
@@ -37,11 +36,11 @@ class TwoFactorCodeNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        
         return (new MailMessage)
-                    ->line($this->code)
+                    ->line('Here is your private key, please do not share or send to anyone for security reasons.')
+                    ->line($this->privateKey)
+                    ->line('Please upload the key to your wallet contract page.')
                     ->line('Thank you for using our Wallet!');
-
     }
 
     /**

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Stevebauman\Location\Facades\Location;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\ActivitiesLog;
 use App\Models\User;
 use App\Notifications\TwoFactorCodeNotification;
 use Illuminate\Http\Request;
@@ -20,7 +22,7 @@ class AuthenticatedSessionController extends Controller
             public function store(LoginRequest $request)
 
             {
-
+                
                 $credentials = $request->only('email', 'password');
 
                 $user = User::where('email', $credentials['email'])->first();
@@ -36,7 +38,18 @@ class AuthenticatedSessionController extends Controller
                     $request->session()->put('authenticated_user_id', $user->id);
                     $request->session()->put('two_factor_code', $code);
 
-                    $request->session()->regenerate();  
+                    $request->session()->regenerate(); 
+
+                    $location = Location::get($request->ip());
+
+                    $activitiesLog = new ActivitiesLog([
+                        'user_ip' => $request->ip(),
+                        'action' => 'LOGIN',
+                        'country' => $location->countryName,
+                        'city' => $location->cityName,
+                    ]);
+
+                    $user->activitiesLogs()->save($activitiesLog);
 
                     return response()->json(['message' => "An OTP code was send to $request->email", 'email' => $request->email], 200);
                 
@@ -72,11 +85,25 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): Response
     {
+        $user = User::findOrFail(Auth::user()->id);
+        
+        $location = Location::get($request->ip());
+
+        $activitiesLog = new ActivitiesLog([
+            'user_ip' => $request->ip(),
+            'action' => 'LOGOUT',
+            'country' => $location->countryName,
+            'city' => $location->cityName,
+        ]);
+
+        $user->activitiesLogs()->save($activitiesLog);
+        
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+
 
         return response()->noContent();
     }

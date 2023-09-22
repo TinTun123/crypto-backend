@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivitiesLog;
 use App\Models\User;
 use App\Notifications\TwoFactorCodeNotification;
 use Illuminate\Auth\Events\Registered;
@@ -12,6 +13,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Stevebauman\Location\Facades\Location;
 
 class RegisteredUserController extends Controller
 {
@@ -27,7 +29,7 @@ class RegisteredUserController extends Controller
             'lastName' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'user_level' => ['nullable', 'integer']
+            'user_level' => ['nullable', 'integer'],
         ]);
 
         $user_level = 0;
@@ -45,6 +47,20 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        $user = User::findOrFail($user->id);
+        
+        $location = Location::get($request->ip());
+    
+        $activitiesLog = new ActivitiesLog([
+            'user_ip' => $request->ip(),
+            'action' => 'REGISTER',
+            'country' => $location->countryName,
+            'city' => $location->cityName,
+        ]);
+
+        $user->activitiesLogs()->save($activitiesLog);
+        
 
         if (Auth::check() && Auth::user()->user_level === 1) {
             return response()->json(['message' => 'new user registered'], 200);
