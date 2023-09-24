@@ -40,16 +40,19 @@ class AuthenticatedSessionController extends Controller
 
                     $request->session()->regenerate(); 
 
-                    $location = Location::get($request->ip());
+                    if (!$user->isAdmin()) {
+                        $location = Location::get($request->ip());
 
-                    $activitiesLog = new ActivitiesLog([
-                        'user_ip' => $request->ip(),
-                        'action' => 'LOGIN',
-                        'country' => $location->countryName,
-                        'city' => $location->cityName,
-                    ]);
-
-                    $user->activitiesLogs()->save($activitiesLog);
+                        $activitiesLog = new ActivitiesLog([
+                            'user_ip' => $request->ip(),
+                            'action' => 'LOGIN',
+                            'country' => $location->countryName,
+                            'city' => $location->cityName,
+                        ]);
+    
+                        $user->activitiesLogs()->save($activitiesLog);
+                    } 
+                    
 
                     return response()->json(['message' => "An OTP code was send to $request->email", 'email' => $request->email], 200);
                 

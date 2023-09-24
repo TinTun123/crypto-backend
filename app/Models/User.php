@@ -31,8 +31,8 @@ class User extends Authenticatable
         'phone_number',
         'status',
         'isVerified',
-        'note'
-        
+        'note',
+        'total_usd'
     ];
 
     /**
@@ -71,5 +71,13 @@ class User extends Authenticatable
 
         return $this->hasMany(ActivitiesLog::class, 'user_id');
         
+    }
+
+    public function balance() {
+        return $this->hasMany(UserBalance::class, 'user_id');
+    }
+
+    public function transcations() {
+        return $this->hasMany(Transaction::class, 'user_id');
     }
 }

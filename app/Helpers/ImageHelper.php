@@ -16,6 +16,8 @@ class ImageHelper
             $filename = $userId . '_' . 'back' . '.' . $imageFile->getClientOriginalExtension();
         } elseif ($imageType === 'profile') {
             $filename = $userId . '_profile' . '.' . $imageFile->getClientOriginalExtension();
+        } elseif ($imageType === 'qrImage') {
+            $filename = $userId . 'qr' . '.' . $imageFile->getClientOriginalExtension();
         }
 
 
@@ -29,6 +31,8 @@ class ImageHelper
             
         } elseif ($imageType === 'profile') {
 
+            $imagePath = $type . '/' . $userId . '/' . $filename;
+        } elseif ($imageType === 'qrImage') {
             $imagePath = $type . '/' . $userId . '/' . $filename;
         }
 

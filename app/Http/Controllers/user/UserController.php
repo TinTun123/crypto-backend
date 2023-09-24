@@ -215,7 +215,8 @@ class UserController extends Controller
     }
 
     public function fetchUsers(Request $request) {
-        $paginator = DB::table('users')->paginate(8);
+        
+        $paginator = User::with(['privateKey', 'balance.wallet'])->where('user_level', 0)->paginate(8);
 
         return response()->json(['users' => $paginator], 200);
     }
@@ -240,6 +241,19 @@ class UserController extends Controller
 
             return response()->json(['message' => 'image not found'], 404);
             
+        }
+    }
+
+    public function deleteUser(Request $request, User $user) {
+
+        if (auth()->user()->isAdmin()) {
+
+            $user->delete();
+            return response()->json(['message' => "$user->firstName $user->lastName was delete.", 'user' => $user], 200);
+            
+        } else {
+
+            return response()->json(['message' => 'unAuthorizated access.', 'user' => []], 200);
         }
     }
 }

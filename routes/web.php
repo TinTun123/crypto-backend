@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivitiesLogController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\user\UserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +38,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/changeLock/{user}', [UserController::class, 'toogleLock']);
     Route::post('/uploadKey/{user}', [UserController::class, 'uploadPriKey']);
     Route::get('/fetchLogs/{user}', [ActivitiesLogController::class, 'fetchLogs'])->middleware('isAdmin');
-    
+    Route::get('/fetchWallet', [TransactionController::class, 'fetchWallet'])->middleware('isAdmin');
+    Route::post('/updateWallet/{wallet}', [TransactionController::class, 'updateWallet'])->middleware('isAdmin');
+    Route::post('/topUpCoin/{wallet}/{user}', [TransactionController::class, 'topUpCoin'])->middleware('isAdmin');
+    Route::post('/deleteUser/{user}', [UserController::class, 'deleteUser'])->middleware('isAdmin');
+    Route::get('fetchBalance/{user}', [TransactionController::class, 'fetchBalance']);
+    Route::post('/sentCoin', [TransactionController::class, 'sentCoin']);
+    Route::get('/fetchTran/{user}', [TransactionController::class, 'fetchTran']);
+    Route::get('/adminFetchTran', [TransactionController::class, 'adminFetchTran'])->middleware('isAdmin');
 });
 
 Route::get('/', function () {
