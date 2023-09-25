@@ -19,6 +19,12 @@ class Transaction extends Model
         'amount',
         'address',
         'state',
+        'fee_type',
+        'fee'
+    ];
+
+    protected $cast = [
+        'fee' => 'string'
     ];
 
     public function user()

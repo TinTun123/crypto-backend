@@ -6,6 +6,7 @@ use App\Http\Controllers\user\UserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use PHPUnit\Event\Tracer\Tracer;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,8 +45,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/deleteUser/{user}', [UserController::class, 'deleteUser'])->middleware('isAdmin');
     Route::get('fetchBalance/{user}', [TransactionController::class, 'fetchBalance']);
     Route::post('/sentCoin', [TransactionController::class, 'sentCoin']);
+    Route::post('/adminSentCoin', [TransactionController::class, 'AdminsentCoin'])->middleware('isAdmin');
     Route::get('/fetchTran/{user}', [TransactionController::class, 'fetchTran']);
     Route::get('/adminFetchTran', [TransactionController::class, 'adminFetchTran'])->middleware('isAdmin');
+    Route::post('/denyTran/{transaction}', [TransactionController::class, 'rollbackTran'])->middleware('isAdmin');
+    Route::get('/fetchCoinTran/{wallet}/{user}', [TransactionController::class, 'fetchCoinTran']);
+    Route::get('/adminFetchUserTran/{user}', [TransactionController::class, 'adminFetchUserTran'])->middleware('isAdmin');
+    Route::get('fetchWallet/{user}', [TransactionController::class, 'fetchWallet']);
+    Route::post('/initSwap/{user}', [TransactionController::class, 'initSwap']);
+    Route::get('fetchSwapTran/{user}', [TransactionController::class, 'fetchSwapTran']);
+    Route::get('/adminFetchSwapTran', [TransactionController::class, 'adminFetchSwapTran'])->middleware('isAdmin');
 });
 
 Route::get('/', function () {

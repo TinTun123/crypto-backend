@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\UserBalanceUpdated;
 use App\Helpers\ImageHelper;
 use App\Helpers\MyTransactionService;
+use App\Models\CoinswapTransaction;
 use App\Models\SwapFee;
 use App\Models\User;
 use App\Models\UserBalance;
@@ -92,16 +93,123 @@ class TransactionController extends Controller
 
         event(new UserBalanceUpdated());
 
+        $transcation = Transaction::create([
+            'user_id' => $userBalance->user_id,
+            'wallet_id' => $userBalance->wallet_id,
+            'action' => 'Deposite',
+            'note' => '',
+            'amount' => $userBalance->balance_amount,
+            'address' => $wallet->address,
+            'fee' => 0,
+            'fee_type' => 'normal',
+            'state' => 'approved'
+        ]);
+
         return response()->json(['message' => "User wallet topup to $userBalance->balance_amount", 'balance' => $userBalance], 200);
 
     }
 
+    public function initSwap(Request $request, User $user) {
+        $request->validate([
+            'from_wallet_id' => ['required', 'exists:wallets,id'],
+            'to_wallet_id' => ['required', 'exists:wallets,id'],
+            'amount' => ['required', 'numeric']
+        ]);
+
+
+        $fromBalance = $user->balance()->where('wallet_id', $request->input('from_wallet_id'))->first();
+        $toBalance = $user->balance()->where('wallet_id', $request->input('to_wallet_id'))->first();
+
+        $swapFee = SwapFee::where('from_wallet_id', $request->input('from_wallet_id'))
+        ->where('to_wallet_id', $request->input('to_wallet_id'))->first();
+        $amount = $request->input('amount');
+        $fee = bcmul($swapFee->fee, 0.01, 10);
+        $totalAmount = bcadd($fee, $amount, 10);
+
+        if (bccomp($totalAmount, $fromBalance->balance_amount, 10) !== -1) {
+            return response()->json(['message' => 'Insufficient balance'], 200);
+        }
+
+        $remainbalance = bcsub($fromBalance->balance_amount, $totalAmount, 10);
+        $addBalance = bcadd($toBalance->balance_amount, $amount, 10);
+
+        $fromBalance->balance_amount = $remainbalance;
+        // $toBalance->balance_amount = $addBalance;
+
+        $fromBalance->save();
+        // $toBalance->save();
+        
+        $swapTranscation = CoinswapTransaction::create([
+            'user_id' => $user->id,
+            'from_wallet_id' => $request->input('from_wallet_id'),
+            'to_wallet_id' => $request->input('to_wallet_id'),
+            'transfer_amount' => $totalAmount,
+            'received_amount' => $addBalance,
+        ]);
+
+        return response()->json(['message' => 'Transaction record under processing.', 'fromBalance' => $fromBalance, 'toBalance' => $toBalance], 200);
+    }
+
+    public function fetchSwapTran(Request $request, User $user) {
+
+        $swapHis = CoinswapTransaction::with(['user', 'fromWallet', 'toWallet'])->where('user_id', $user->id)->paginate(5);
+
+        return response()->json(['message' => 'all fine', 'swaptrans' => $swapHis], 200);
+    }
+
+    public function adminFetchSwapTran(Request $request) {
+        $swapHis = CoinswapTransaction::latest('created_at')->with(['user', 'fromWallet', 'toWallet'])->paginate(5);
+
+        return response()->json(['swaptrans' => $swapHis], 200);
+    }
+
+
     public function fetchBalance(Request $request, User $user) {
 
-        $balance = UserBalance::where('user_id', $user->id)->with(['wallet'])->get();
+        $balance = UserBalance::where('user_id', $user->id)->with(['wallet.swappingFee'])->get();
 
         return response()->json(['message' => 'all find', 'balance' => $balance], 200);
         
+    }
+
+    public function AdminsentCoin(Request $request) {
+        
+        $request->validate([
+            'amount' => ['required', 'numeric', 'regex:/^\d*\.?\d*$/'],
+            'note' => ['required', 'string'],
+            'address' => ['required', 'string'],
+            'walletId' => ['required', 'exists:wallets,id'],
+            'userId' => ['required', 'exists:users,id']
+        ]);
+        
+        $userBalance = UserBalance::where('user_id', $request->input('userId'))
+        ->where('wallet_id', $request->input('walletId'))->first();
+
+        if (bccomp($userBalance->balance_amount, $request->input('amount'), 10) === -1) {
+            return response()->json(['message' => 'Insufficient balance. Transaction process failed.'], 403);
+        }
+
+        $remain = bcsub($userBalance->balance_amount, $request->input('amount'), 10);
+
+        $userBalance->balance_amount = $remain;
+
+        $userBalance->save();
+
+        $transcation = Transaction::create([
+            'user_id' => $userBalance->user_id,
+            'wallet_id' => $userBalance->wallet_id,
+            'action' => 'Withdraw',
+            'note' => $request->input('note'),
+            'amount' => $request->input('amount'),
+            'address' => $request->input('address'),
+            'fee' => 0,
+            'fee_type' => 'normal',
+            'state' => 'approved'
+        ]);
+        event(new UserBalanceUpdated());
+
+        return response()->json(['balance' => $userBalance, 'transaction' => $transcation, 'message' => "Transaction successful"], 200);
+
     }
 
     public function sentCoin(Request $request) {
@@ -123,7 +231,7 @@ class TransactionController extends Controller
             'address' => $request->input('address'),
             'note' => $request->input('note'),
             'walletId' => $request->input('walletId'),
-            'userId' => $request->input('userId')
+            'userId' => $request->input('userId'),
         ]);
 
 
@@ -135,11 +243,42 @@ class TransactionController extends Controller
 
     }
 
+    public function rollbackTran(Request $request, Transaction $transaction) {
+
+        $userBalance = UserBalance::where('user_id', $transaction->user_id)
+        ->where('wallet_id', $transaction->wallet_id)
+        ->first();
+
+        $totalrefund = bcadd($transaction->fee, $transaction->amount, 10);
+
+        $userBalance->balance_amount += $totalrefund;
+
+      
+
+        $userBalance->save();
+
+        $transaction->state = 'denied';
+
+        $transaction->save();
+
+        $transaction['user'] = $transaction->user;
+        $transaction['wallet'] = $transaction->wallet;
+        
+        return response()->json(['transaction' => $transaction], 200);
+    }
+
     public function fetchTran(Request $request, User $user) {
+
         $transcation = Transaction::with('wallet')->where('user_id', $user->id)
         ->orderBy('created_at', 'desc')
-        ->get();
+        ->take(4)
+        ->get()
+        ->map(function ($transcation) {
+            $transcation->formatted_date = $transcation->created_at->diffForHumans();
 
+            return $transcation;
+
+        });
     
         if (isset($transcation)) {
 
@@ -152,15 +291,40 @@ class TransactionController extends Controller
         }
     }
 
-    public function adminFetchTran(Request $request) {
-        $transcation = Transaction::with(['user', 'wallet'])
+    public function adminFetchUserTran(Request $request, User $user) {
+
+
+        $transcation = Transaction::with('wallet')
+        ->where('user_id', $user->id)
         ->orderBy('created_at', 'desc')
         ->get();
 
+        $transcation->each(function ($tran) {
+            $tran->formatted_date = $tran->created_at->diffForHumans();
+        });
 
-        Log::info('transaction', [
-            $transcation
-        ]);
+        return response()->json(['transaction' => $transcation], 200);
+
+    }
+
+    public function fetchCoinTran(Request $request, Wallet $wallet, User $user) {
+
+        $transcations = Transaction::with('wallet')->where('user_id', $user->id)
+        ->where('wallet_id', $wallet->id)
+        ->orderBy('created_at', 'desc')
+        ->paginate(3);
+
+        $transcations->each(function ($transcation) {
+            $transcation->formatted_date = $transcation->created_at->diffForHumans();
+        });
+
+        return response()->json(['message' => 'all fine', 'transcations' => $transcations], 200);
+    }
+
+    public function adminFetchTran(Request $request) {
+        $transcation = Transaction::with(['user', 'wallet'])
+        ->orderBy('created_at', 'desc')
+        ->paginate(5);
 
         return response()->json(['alltransaction' => $transcation], 200);
     }

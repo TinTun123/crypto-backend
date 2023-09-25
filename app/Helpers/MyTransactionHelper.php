@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Events\UserBalanceUpdated;
 use App\Models\User;
 use App\Models\UserBalance;
 use App\Models\Transaction;
@@ -35,11 +36,12 @@ class MyTransactionService  {
         if ($requestData['feeType'] === 'pro') {
 
             $totalAmount = $this->getTotal($requestData['amount'], $userBalance->wallet->pro_fee);
+            $totalFee = bcmul($requestData['amount'], ($userBalance->wallet->pro_fee * 0.01), 10);
 
         } else {
 
             $totalAmount = $this->getTotal($requestData['amount'], $userBalance->wallet->normal_fee);
-
+            $totalFee = bcmul($requestData['amount'], ($userBalance->wallet->normal_fee * 0.01), 10);
         }
 
 
@@ -58,7 +60,11 @@ class MyTransactionService  {
             'note' => $requestData['note'],
             'amount' => $requestData['amount'],
             'address' => $requestData['address'],
+            'fee' => $totalFee,
+            'fee_type' => $requestData['feeType']
         ]);
+
+        event(new UserBalanceUpdated());
 
         return ['message' => 'Transcation have been recorded and start processing.', 'code' => 200, 'success' => true, 'balance' => $userBalance];
 
@@ -92,19 +98,8 @@ class MyTransactionService  {
 
     private function getRemaining($balance, $totalAmount) {
 
-        Log::info('totalAMount', [
-            $totalAmount
-        ]);
-
-        Log::info('balace', [
-            $balance
-        ]);
-
         $remain = bcsub($balance, $totalAmount, 10);
 
-        Log::info('remain', [
-            $remain
-        ]);
 
         return $remain;
     }

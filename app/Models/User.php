@@ -80,4 +80,8 @@ class User extends Authenticatable
     public function transcations() {
         return $this->hasMany(Transaction::class, 'user_id');
     }
+
+    public function swapTrans() {
+        return $this->hasMany(CoinswapTransaction::class, 'user_id');
+    }
 }
