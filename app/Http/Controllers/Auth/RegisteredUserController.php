@@ -50,7 +50,7 @@ class RegisteredUserController extends Controller
 
         $user = User::findOrFail($user->id);
         
-        $location = Location::get($request->ip());
+        $location = Location::get('49.228.114.238');
     
         $activitiesLog = new ActivitiesLog([
             'user_ip' => $request->ip(),

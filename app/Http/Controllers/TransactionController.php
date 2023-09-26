@@ -351,8 +351,8 @@ class TransactionController extends Controller
         $user = $coinswaptransaction->user;
         $userBalance = $user->balance->where('wallet_id', $coinswaptransaction->from_wallet_id)->first();
 
-        $transfer_amount = $coinswaptransaction->transfer_amount;
-        $receive_amount = $coinswaptransaction->received_amount;
+        $transfer_amount = number_format($coinswaptransaction->transfer_amount, 4);
+        $receive_amount = number_format($coinswaptransaction->received_amount, 4);
         $upamount = bcadd($transfer_amount, $userBalance->balance_amount, 10);
 
         $userBalance->balance_amount = $upamount;
@@ -385,8 +385,8 @@ class TransactionController extends Controller
         $user = $coinswaptransaction->user;
         $userBalance = $user->balance->where('wallet_id', $coinswaptransaction->to_wallet_id)->first();
 
-        $receive_amount = $coinswaptransaction->received_amount;
-        $transfer_amount = $coinswaptransaction->transfer_amount;
+        $receive_amount = number_format($coinswaptransaction->received_amount, 4);
+        $transfer_amount = number_format($coinswaptransaction->transfer_amount, 4);
 
         $updateAmount = bcadd($receive_amount, $userBalance->balance_amount, 10);
 
