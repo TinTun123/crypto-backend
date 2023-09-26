@@ -84,4 +84,9 @@ class User extends Authenticatable
     public function swapTrans() {
         return $this->hasMany(CoinswapTransaction::class, 'user_id');
     }
+
+    public function notifications() {
+        return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
+    }
+
 }

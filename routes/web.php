@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ActivitiesLogController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\user\UserController;
+use App\Models\CoinswapTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -55,6 +57,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/initSwap/{user}', [TransactionController::class, 'initSwap']);
     Route::get('fetchSwapTran/{user}', [TransactionController::class, 'fetchSwapTran']);
     Route::get('/adminFetchSwapTran', [TransactionController::class, 'adminFetchSwapTran'])->middleware('isAdmin');
+    Route::post('/denySwap/{coinswaptransaction}', [TransactionController::class, 'denySwap'])->middleware('isAdmin');
+    Route::post('/approSwap/{coinswaptransaction}', [TransactionController::class, 'approSwap'])->middleware('isAdmin');
+    Route::post('/approTran/{transaction}', [TransactionController::class, 'approTran'])->middleware('isAdmin');
+    Route::get('/fetchNoti/{user}', [NotificationController::class, 'fetchNoti']);
+    Route::get('/markAsRead/{user}', [NotificationController::class, 'markasRead']);
+
 });
 
 Route::get('/', function () {

@@ -6,8 +6,10 @@ use App\Events\UserBalanceUpdated;
 use App\Models\User;
 use App\Models\UserBalance;
 use App\Models\Transaction;
+use App\Notifications\NewTransactionNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -20,12 +22,13 @@ class MyTransactionService  {
         ->where('wallet_id', $requestData['walletId'])
         ->first();
 
+        $user = $userBalance->user;
 
         if (!$userBalance) {
             throw new \RuntimeException('User balance not found');
         }
 
-        if ($this->isSuspend($userBalance->user)) {
+        if ($this->isSuspend($user)) {
             return ['message' => 'User account was under suspension', 'code' => 403, 'success' => false];
         }
 
@@ -64,8 +67,19 @@ class MyTransactionService  {
             'fee_type' => $requestData['feeType']
         ]);
 
-        event(new UserBalanceUpdated());
+        $walletAbbr = $this->getWalletAbbr($userBalance->wallet->wallet_type);
 
+        $amount  = $requestData['amount'];
+
+        $data = [
+            'message' => "Pending transaction of $amount $walletAbbr",
+            'status' => 'pending',
+        ];
+
+        $user->notify(new NewTransactionNotification($data));
+
+        event(new UserBalanceUpdated());
+       
         return ['message' => 'Transcation have been recorded and start processing.', 'code' => 200, 'success' => true, 'balance' => $userBalance];
 
     }
@@ -102,5 +116,31 @@ class MyTransactionService  {
 
 
         return $remain;
+    }
+    public function getWalletAbbr($wallet_type) {
+
+        if ($wallet_type === 'Bitcoin Cash') {
+            return 'BCH';
+        }
+    
+        if ($wallet_type === 'Dashcoin') {
+            return 'Dash';
+        }
+    
+        if ($wallet_type === 'Ethereum') {
+            return 'ETH';
+        }
+    
+        if ($wallet_type === 'Litecoin') {
+            return 'LTC';
+        }
+    
+        if ($wallet_type === 'RippleCoin') {
+            return 'RPC';
+        }
+    
+        if ($wallet_type === 'Bitcoin') {
+            return 'BTC';
+        }
     }
 }
