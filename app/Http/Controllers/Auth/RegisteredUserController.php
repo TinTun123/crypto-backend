@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Stevebauman\Location\Facades\Location;
 
@@ -63,7 +64,10 @@ class RegisteredUserController extends Controller
         
 
         if (Auth::check() && Auth::user()->user_level === 1) {
-            return response()->json(['message' => 'new user registered'], 200);
+            $user->load(['privateKey', 'balance.wallet']);
+            
+            return response()->json(['message' => 'new user registered', 'user' => $user], 200);
+
         } else {
             
             $code = rand(10000, 99999);

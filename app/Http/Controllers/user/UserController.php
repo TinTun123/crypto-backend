@@ -215,8 +215,44 @@ class UserController extends Controller
     }
 
     public function fetchUsers(Request $request) {
-        
-        $paginator = User::with(['privateKey', 'balance.wallet'])->where('user_level', 0)->paginate(8);
+
+        $query = $request->query('query');
+        $type = $request->query('type');
+
+        if (isset($query) || isset($type)) {
+            if ($type === 'name') {
+                $paginator = User::with(['privateKey', 'balance.wallet'])
+                ->where('user_level', 0)
+                ->where(function ($queryBuilder) use ($query) {
+                    $queryBuilder->where('firstName', 'LIKE', "%$query%")
+                    ->orWhere('lastName', 'LIKE', "%$query%");
+                })->paginate(9);
+
+            } else if ($type === 'isVerified') {
+                $paginator = User::with(['privateKey', 'balance.wallet'])
+                ->where('isVerified', false)->where('user_level', 0)->paginate(9);
+            } elseif ($type === 'status') {
+                $paginator = User::with(['privateKey', 'balance.wallet'])
+                ->where('status', false)->where('user_level', 0)->paginate(9);
+            } elseif ($type === 'state') {
+
+                Log::info('state', [
+                    'statequery'
+                ]);
+
+                $paginator = User::with(['privateKey', 'balance.wallet'])
+                ->whereHas('privateKey', function ($private) {
+                    Log::info('query', [
+                        $private
+                    ]);
+                    $private->where('state', false);
+                })->where('user_level', 0)->paginate(9);
+            }
+
+        } else {
+            $paginator = User::with(['privateKey', 'balance.wallet'])->where('user_level', 0)->paginate(9);
+        }
+
 
         return response()->json(['users' => $paginator], 200);
     }
