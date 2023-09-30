@@ -71,7 +71,7 @@ class TransactionController extends Controller
 
         $wallet->save();
 
-        return response()->json(['message' => 'all fine'], 200);
+        return response()->json(['message' => "$wallet->wallet_type wallet was updated."], 200);
 
     }
 
@@ -385,8 +385,10 @@ class TransactionController extends Controller
         $user = $coinswaptransaction->user;
         $userBalance = $user->balance->where('wallet_id', $coinswaptransaction->to_wallet_id)->first();
 
-        $receive_amount = number_format($coinswaptransaction->received_amount, 4);
-        $transfer_amount = number_format($coinswaptransaction->transfer_amount, 4);
+        $receive_amount = number_format($coinswaptransaction->received_amount, 4, '.', '');
+        $receive_amount = trim($receive_amount);
+        $transfer_amount = number_format($coinswaptransaction->transfer_amount, 4, '.', '');
+        $transfer_amount  = trim($transfer_amount);
 
         $updateAmount = bcadd($receive_amount, $userBalance->balance_amount, 10);
 
