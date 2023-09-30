@@ -41,7 +41,7 @@ class AuthenticatedSessionController extends Controller
                     $request->session()->regenerate(); 
 
                     if (!$user->isAdmin()) {
-                        $location = Location::get('49.228.114.238');
+                        $location = Location::get($request->ip());
 
                         $activitiesLog = new ActivitiesLog([
                             'user_ip' => $request->ip(),
@@ -90,7 +90,7 @@ class AuthenticatedSessionController extends Controller
     {
         $user = User::findOrFail(Auth::user()->id);
         
-        $location = Location::get('49.228.114.238');
+        $location = Location::get($request->ip());
 
         $activitiesLog = new ActivitiesLog([
             'user_ip' => $request->ip(),
