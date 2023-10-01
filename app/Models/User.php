@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Notifications\CustomResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -87,6 +89,16 @@ class User extends Authenticatable
 
     public function notifications() {
         return $this->morphMany(Notification::class, 'notifiable')->orderBy('created_at', 'desc');
+    }
+
+    public function getEmailForPasswordReset()
+    {
+        return $this->email; // Replace 'email' with the actual column name for the user's email address in your database.
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordNotification($token));
     }
 
 }
