@@ -7,7 +7,7 @@
     <table>
         <tr>
             <td>
-                <img src="{{ asset('/logo.png') }}" alt="{{ config('app.name') }}">
+                <img src="{{ asset('/logo.svg') }}" alt="{{ config('app.name') }}">
             </td>
         </tr>
         <tr>

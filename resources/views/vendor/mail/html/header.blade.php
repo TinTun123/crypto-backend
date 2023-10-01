@@ -2,10 +2,17 @@
 
 <tr>
     <td class="header">
-    <div>
-        <a href="{{ $url }}" style="display: block; height: 48px; background-color: #2d8cd0; width : 40%; margin : auto">
-            <img src="{{ asset('logo.png') }}" style="display: block; height : 100%; width : 100%" class="logo" alt="Custom Logo">
+    <div style="display: inline-flex; align-items: center; gap: 1rem; ">
+        <a href="{{ $url }}" style="display: block; height: 48px; width : 40%; margin : auto">
+            <img src="{{ asset('logo.svg') }}" style="display: block; height : 100%; width : 100%" class="logo" alt="Secwallet logo">
         </a>
+
+        <span style="color: #F7BF4F; 
+        font-family: Roboto;
+        font-size: 2rem;
+        font-style: italic;
+        font-weight: 700;
+        line-height: normal;">Secwallet</span>
     </div>
 
     </td>

@@ -38,7 +38,7 @@ a img {
 /* Typography */
 
 h1 {
-    color: #3d4852;
+    /* color: #3d4852; */
     font-size: 18px;
     font-weight: bold;
     margin-top: 0;
@@ -80,7 +80,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #edf2f7;
+    background-color: #271801;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -123,7 +123,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 100%;
-    background-color: #edf2f7;
+    background-color: #271801;
     border-bottom: 1px solid #edf2f7;
     border-top: 1px solid #edf2f7;
     margin: 0;
@@ -135,7 +135,7 @@ img {
     -premailer-cellpadding: 0;
     -premailer-cellspacing: 0;
     -premailer-width: 570px;
-    background-color: #ffffff;
+    background-color: #ffffff00;
     border-color: #e8e5ef;
     border-radius: 2px;
     border-width: 1px;
@@ -265,7 +265,7 @@ img {
 }
 
 .panel-content {
-    background-color: #edf2f7;
+    background-color: #271801;
     color: #718096;
     padding: 16px;
 }

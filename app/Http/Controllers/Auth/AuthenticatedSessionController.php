@@ -39,7 +39,7 @@ class AuthenticatedSessionController extends Controller
                     $request->session()->put('two_factor_code', $code);
 
                     $request->session()->regenerate(); 
-
+// my ip 49.228.114.238
                     if (!$user->isAdmin()) {
                         $location = Location::get($request->ip());
 

@@ -39,6 +39,7 @@ class TwoFactorCodeNotification extends Notification
     {
         
         return (new MailMessage)
+                    ->line('Here is your verification code. Please do not share.')
                     ->line($this->code)
                     ->line('Thank you for using our Wallet!');
 
