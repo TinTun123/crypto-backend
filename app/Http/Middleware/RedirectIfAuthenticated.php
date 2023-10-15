@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfAuthenticated
@@ -21,7 +22,13 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return response()->json(['message' => 'User already authenticated'], 200);
+                $user = Auth::guard($guard)->user();
+
+                Log::info('user', [
+                $user
+                ]);
+                
+                return response()->json(['message' => 'User already authenticated', 'user' => $user], 200);
             }
         }
 
