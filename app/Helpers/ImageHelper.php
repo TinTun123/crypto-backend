@@ -41,6 +41,7 @@ class ImageHelper
         }
         // Store the image in the specified folder under storage/public
         // $imagePath = $userId . '/'. 'idCard' . '/' . $filename;
+        
         Storage::disk('public')->put($imagePath, file_get_contents($imageFile));
 
         $public_url = asset("storage/{$imagePath}");

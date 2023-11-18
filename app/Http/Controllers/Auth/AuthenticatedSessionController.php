@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
             
                     $request->session()->put('authenticated_user_id', $user->id);
                     $request->session()->put('two_factor_code', $code);
-
+//same test
                     $request->session()->regenerate(); 
 // my ip 49.228.114.238
                     if (!$user->isAdmin()) {
