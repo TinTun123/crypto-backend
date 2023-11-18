@@ -30,7 +30,7 @@ class NotificationController extends Controller
 
     public function markasRead(Request $request, User $user) {
         $notifications = $user->notifications()->whereNull('read_at')->update(['read_at' => now()]);
-
+//test
         return response()->json([], 200);
 
     }

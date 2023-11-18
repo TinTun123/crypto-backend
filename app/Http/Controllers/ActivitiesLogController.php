@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class ActivitiesLogController extends Controller
 {
-    //
+    //test
     public function fetchLogs(Request $request, User $user) {
 
         Log::info('user', [
